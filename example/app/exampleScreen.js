@@ -58,7 +58,7 @@ export default class exampleScreen extends Component {
           shadowStyle={StyleSheet.flatten(styles.shadowStyle2)}>
           <Button
             style={styles.shadowStyle2}
-            label=" " onPress={() => { }}
+            label="Max Shadow " onPress={() => { }}
             ref={(r) => { this.applyShadowForButton(r); }}
             enableShadow />
         </ButtonContainer>
@@ -108,12 +108,13 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     // padding: 20,
-    // backgroundColor: '#FFFFFF',
+    // backgroundColor: '#FF0000',
+    // borderRadius: 6,
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
     alignItems: 'flex-start',
-    marginTop: 50
+    marginTop: 40
   },
   listItemContainer: {
     flex: 1,
@@ -133,8 +134,9 @@ const styles = StyleSheet.create({
     shadowRadius: 9.5,
   },
   shadowStyle2: {
-    shadowColor: '#459FED',
-    shadowOffset: { height: 25, width: 0 },
+    // shadowColor: '#459FED',
+    shadowColor: '#3082C8',
+    shadowOffset: { height: 5, width: 0 },
     shadowOpacity: 1,
     shadowRadius: 9.5,
   },

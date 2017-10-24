@@ -1,8 +1,10 @@
 import _ from 'lodash';
-import React, {Component} from 'react';
-import {ScrollView, View, Text, StyleSheet, Dimensions} from 'react-native';
-import {Colors, Shadows} from 'react-native-ui-lib'; // eslint-disable-line
+import React, { Component } from 'react';
+import { ScrollView, View, Text, StyleSheet, Dimensions } from 'react-native';
+import { Colors, Shadows } from 'react-native-ui-lib'; // eslint-disable-line
 // import {Cards} from '../../src';
+
+import { AndroidShadowManager, ShadowParentView } from 'react-native-android-shadow';
 
 const {height} = Dimensions.get('window');
 
@@ -57,30 +59,50 @@ export default class ShadowsScreen extends Component {
 
   renderCircleWithShadow(shadow, name) {
     return (
+      <ShadowParentView key={`${name}_circle`} shadowStyle={shadow.bottom}>
+        <View style={[styles.shadowCircle, shadow.top]}>
+          <View style={[styles.innerCircle, shadow.bottom]}>
+            <Text style={styles.shadowLabel}>{name}</Text>
+          </View>
+        </View>
+      </ShadowParentView>
+    );
+    /*return (
       <View key={`${name}_circle`} style={[styles.shadowCircle, shadow.top]}>
         <View style={[styles.innerCircle, shadow.bottom]}>
           <Text style={styles.shadowLabel}>{name}</Text>
         </View>
       </View>
-    );
+    );*/
   }
 
   renderSquareWithShadow(shadow, name) {
+    const innerView = <View key={`${name}_square`} style={[styles.shadowSquare, shadow.top]}>
+      <View style={[styles.innerSquare, shadow.bottom]}>
+        <Text style={styles.shadowLabel}>{name}</Text>
+      </View>
+    </View>;
+
     return (
+      <ShadowParentView key={`${name}_square`} shadowStyle={shadow.top}>
+        {innerView}
+      </ShadowParentView>);
+
+    /*return (
       <View key={`${name}_square`} style={[styles.shadowSquare, shadow.top]}>
         <View style={[styles.innerSquare, shadow.bottom]}>
           <Text style={styles.shadowLabel}>{name}</Text>
         </View>
       </View>
-    );
+    );*/
   }
 
   render() {
     return (
       <View>
-        <View style={{flexDirection: 'row', position: 'absolute', top: 0, left: 0, bottom: 0, right: 0}}>
-          <View style={[styles.subContainer, {backgroundColor: Colors.dark80}]}/>
-          <View style={[styles.subContainer, {backgroundColor: Colors.white}]}/>
+        <View style={{ flexDirection: 'row', position: 'absolute', top: 0, left: 0, bottom: 0, right: 0 }}>
+          <View style={[styles.subContainer, { backgroundColor: Colors.dark80 }]} />
+          <View style={[styles.subContainer, { backgroundColor: Colors.white }]} />
         </View>
         <ScrollView>
           <View style={styles.container}>

@@ -17,6 +17,11 @@ public class BlurHelper {
         int width = Math.round(image.getWidth() * scale);
         int height = Math.round(image.getHeight() * scale);
 
+        if (radius <= 0f) {
+            return image;
+        }
+        radius = Math.min(radius,25f);
+
         Bitmap inputBitmap = Bitmap.createScaledBitmap(image, width, height, false);
         Bitmap outputBitmap = Bitmap.createBitmap(inputBitmap);
 

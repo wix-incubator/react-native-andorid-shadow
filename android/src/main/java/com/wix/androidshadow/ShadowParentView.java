@@ -2,7 +2,6 @@ package com.wix.androidshadow;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -19,11 +18,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 
 import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.ReadableMapKeySetIterator;
-import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.views.view.ReactViewGroup;
-
-import java.util.HashMap;
 
 /**
  * Created by zachik on 10/10/2017.
@@ -32,7 +27,7 @@ import java.util.HashMap;
 public class ShadowParentView extends ReactViewGroup {
     private static final String TAG = "ReactNativeJS";
 
-    private static final float BLUR_SCALE = 0.4f;
+    private static final float BLUR_SCALE = 0.125f;
 
     private Context mContext;
     private Bitmap viewBmp;
@@ -50,11 +45,7 @@ public class ShadowParentView extends ReactViewGroup {
     public ShadowParentView(Context context) {
         super(context);
         mContext = context;
-//        setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-
         shadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        shadowPaint.setColorFilter(new PorterDuffColorFilter(Color.argb(128,0,255,0), PorterDuff.Mode.SRC_IN));
-//        shadowPaint.setMaskFilter(new BlurMaskFilter(20, BlurMaskFilter.Blur.OUTER));
     }
 
     public void setShadowParams(ReadableMap readableMap) {
@@ -65,14 +56,20 @@ public class ShadowParentView extends ReactViewGroup {
 //            Log.d(TAG,"ShadowParentView setShadowParams! key = " + key + " typ = " + type);
 //        }
 
-//        shadowRadius = (float) readableMap.getDouble("shadowRadius");
-        
+        shadowRadius = (float) readableMap.getDouble("shadowRadius");
+        shadowColor = Color.parseColor(readableMap.getString("shadowColor"));
         shadowOpacity = (float) readableMap.getDouble("shadowOpacity");
-        ReadableMap offsetMap = readableMap.getMap("shadowOffset");
-        shadowOffsetX = (float) offsetMap.getDouble("width");
-        shadowOffsetY = (float) offsetMap.getDouble("height") * getResources().getDisplayMetrics().density;
+        if (readableMap.hasKey("shadowOffset")) {
+            ReadableMap offsetMap = readableMap.getMap("shadowOffset");
+            shadowOffsetX = (float) offsetMap.getDouble("width");
+            shadowOffsetY = (float) offsetMap.getDouble("height") * getResources().getDisplayMetrics().density;
+        }
 
         Log.d(TAG,"ShadowParentView setShadowParams! shadowRadius = " + shadowRadius + " shadowOffsetY = " + shadowOffsetY);
+
+
+        shadowPaint.setColorFilter(new PorterDuffColorFilter(shadowColor, PorterDuff.Mode.SRC_IN));
+        shadowPaint.setAlpha((int) (shadowOpacity * 255));
     }
 
     @Override
