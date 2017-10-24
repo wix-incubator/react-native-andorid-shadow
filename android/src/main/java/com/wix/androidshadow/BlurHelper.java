@@ -27,12 +27,19 @@ public class BlurHelper {
 
         RenderScript rs = RenderScript.create(ctx);
         ScriptIntrinsicBlur theIntrinsic = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs));
-        Allocation tmpIn = Allocation.createFromBitmap(rs, inputBitmap);
-        Allocation tmpOut = Allocation.createFromBitmap(rs, outputBitmap);
-        theIntrinsic.setRadius(radius);
-        theIntrinsic.setInput(tmpIn);
-        theIntrinsic.forEach(tmpOut);
-        tmpOut.copyTo(outputBitmap);
+
+//        Allocation tmpIn = Allocation.createFromBitmap(rs, inputBitmap);
+//        Allocation tmpOut = Allocation.createFromBitmap(rs, outputBitmap);
+
+        for (int i = 0; i < 2; i++) {
+            Allocation tmpIn = Allocation.createFromBitmap(rs, outputBitmap);
+            Allocation tmpOut = Allocation.createTyped(rs, tmpIn.getType());
+
+            theIntrinsic.setRadius(radius);
+            theIntrinsic.setInput(tmpIn);
+            theIntrinsic.forEach(tmpOut);
+            tmpOut.copyTo(outputBitmap);
+        }
 
 //        return outputBitmap;
         return Bitmap.createScaledBitmap(outputBitmap, image.getWidth(), image.getHeight(), false);

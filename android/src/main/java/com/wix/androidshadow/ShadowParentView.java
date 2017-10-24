@@ -27,15 +27,15 @@ import com.facebook.react.views.view.ReactViewGroup;
 public class ShadowParentView extends ReactViewGroup {
     private static final String TAG = "ReactNativeJS";
 
-    private static final float BLUR_SCALE = 0.125f;
+    private static final float BLUR_SCALE = 0.25f;
 
     private Context mContext;
     private Bitmap viewBmp;
     private Bitmap blurBitmap;
-    private int shadowPadding = 80;
+    private int shadowPadding = 190;
     private float shadowRadius = 25f;
-    private float shadowOpacity = 1f;
-    private int shadowColor;
+//    private float shadowOpacity = 1f;
+//    private int shadowColor;
     private boolean hasShadowColor = false;
     private float shadowOffsetX = 0f;
     private float shadowOffsetY = 0f;
@@ -56,20 +56,36 @@ public class ShadowParentView extends ReactViewGroup {
 //            Log.d(TAG,"ShadowParentView setShadowParams! key = " + key + " typ = " + type);
 //        }
 
-        shadowRadius = (float) readableMap.getDouble("shadowRadius");
-        shadowColor = Color.parseColor(readableMap.getString("shadowColor"));
-        shadowOpacity = (float) readableMap.getDouble("shadowOpacity");
-        if (readableMap.hasKey("shadowOffset")) {
-            ReadableMap offsetMap = readableMap.getMap("shadowOffset");
-            shadowOffsetX = (float) offsetMap.getDouble("width");
-            shadowOffsetY = (float) offsetMap.getDouble("height") * getResources().getDisplayMetrics().density;
-        }
+//        shadowRadius = (float) readableMap.getDouble("shadowRadius");
+//        shadowColor = Color.parseColor(readableMap.getString("shadowColor"));
+//        shadowOpacity = (float) readableMap.getDouble("shadowOpacity");
+//        if (readableMap.hasKey("shadowOffset")) {
+//            ReadableMap offsetMap = readableMap.getMap("shadowOffset");
+//            shadowOffsetX = (float) offsetMap.getDouble("width");
+//            shadowOffsetY = (float) offsetMap.getDouble("height") * getResources().getDisplayMetrics().density;
+//        }
+//
+//        Log.d(TAG,"ShadowParentView setShadowParams! shadowRadius = " + shadowRadius + " shadowOffsetY = " + shadowOffsetY);
+//
+//
+//        shadowPaint.setColorFilter(new PorterDuffColorFilter(shadowColor, PorterDuff.Mode.SRC_IN));
+//        shadowPaint.setAlpha((int) (shadowOpacity * 255));
+    }
 
-        Log.d(TAG,"ShadowParentView setShadowParams! shadowRadius = " + shadowRadius + " shadowOffsetY = " + shadowOffsetY);
-
-
+    public void setShadowRadius(float radius) {
+        this.shadowRadius = radius;
+    }
+    public void setShadowOpacity(float opacity) {
+        this.shadowPaint.setAlpha((int) (opacity * 255));
+    }
+    public void setShadowColor(int shadowColor) {
+//        int shadowColor = Color.parseColor(colorStr);
         shadowPaint.setColorFilter(new PorterDuffColorFilter(shadowColor, PorterDuff.Mode.SRC_IN));
-        shadowPaint.setAlpha((int) (shadowOpacity * 255));
+    }
+
+    public void setShadowOffset(ReadableMap offsetMap) {
+        shadowOffsetX = dpToPx(  (float) offsetMap.getDouble("width"));
+        shadowOffsetY = dpToPx( (float) offsetMap.getDouble("height"));
     }
 
     @Override
@@ -84,8 +100,9 @@ public class ShadowParentView extends ReactViewGroup {
 //        Log.d(TAG,"ShadowParentView onMeasure! after child w = " + getChildAt(0).getMeasuredWidth());
 //        super.onMeasure(MeasureSpec.makeMeasureSpec(getChildAt(0).getMeasuredWidth(),MeasureSpec.EXACTLY), heightMeasureSpec);
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        Log.d(TAG,"ShadowParentView onMeasure! w = " + getMeasuredWidth() + " widthMode " + widthMode + " widthSize " + widthSize);
-        Log.d(TAG,"ShadowParentView onMeasure! child w = " + getChildAt(0).getMeasuredWidth());
+
+//        Log.d(TAG,"ShadowParentView onMeasure! w = " + getMeasuredWidth() + " widthMode " + widthMode + " widthSize " + widthSize);
+//        Log.d(TAG,"ShadowParentView onMeasure! child w = " + getChildAt(0).getMeasuredWidth());
 //        Log.d(TAG,"ShadowParentView onMeasure! param w = " + getLayoutParams().width );
     }
 
@@ -193,6 +210,10 @@ public class ShadowParentView extends ReactViewGroup {
 //        canvas.drawColor(Color.RED);
 //        canvas.drawBitmap(captureView(),shadowPadding,shadowPadding,null);
         return output;
+    }
+
+    private float dpToPx(float dp) {
+        return dp * getResources().getDisplayMetrics().density;
     }
 
     private class BlurTask extends AsyncTask<Void,Void,Bitmap> {

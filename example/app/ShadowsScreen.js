@@ -1,12 +1,15 @@
 import _ from 'lodash';
 import React, { Component } from 'react';
-import { ScrollView, View, Text, StyleSheet, Dimensions } from 'react-native';
-import { Colors, Shadows } from 'react-native-ui-lib'; // eslint-disable-line
+import { ScrollView, View, Text, StyleSheet, Dimensions, Platform } from 'react-native';
+import { Colors, Shadows, Button } from 'react-native-ui-lib'; // eslint-disable-line
 // import {Cards} from '../../src';
 
 import { AndroidShadowManager, ShadowParentView } from 'react-native-android-shadow';
 
 const {height} = Dimensions.get('window');
+
+const ANDROID_PLATFORM = (Platform.OS === 'android');
+const ShapeContainer = ANDROID_PLATFORM ? ShadowParentView : View;
 
 const shadowsOverWhiteBkg = _.reduce(Shadows, (results, value, key) => {
   if (key.startsWith('white')) {
@@ -58,15 +61,7 @@ export default class ShadowsScreen extends Component {
   }
 
   renderCircleWithShadow(shadow, name) {
-    return (
-      <ShadowParentView key={`${name}_circle`} shadowStyle={shadow.bottom}>
-        <View style={[styles.shadowCircle, shadow.top]}>
-          <View style={[styles.innerCircle, shadow.bottom]}>
-            <Text style={styles.shadowLabel}>{name}</Text>
-          </View>
-        </View>
-      </ShadowParentView>
-    );
+
     /*return (
       <View key={`${name}_circle`} style={[styles.shadowCircle, shadow.top]}>
         <View style={[styles.innerCircle, shadow.bottom]}>
@@ -74,10 +69,19 @@ export default class ShadowsScreen extends Component {
         </View>
       </View>
     );*/
+
+    console.log(' color ' + shadow.top.shadowColor);
+    return (
+      <ShapeContainer key={`${name}_circle`} style={[styles.shadowCircle, shadow.top]}>
+        <ShapeContainer style={[styles.innerCircle, shadow.bottom]}>
+          <Text style={styles.shadowLabel}>{name}</Text>
+        </ShapeContainer>
+      </ShapeContainer>
+    );
   }
 
   renderSquareWithShadow(shadow, name) {
-    const innerView = <View key={`${name}_square`} style={[styles.shadowSquare, shadow.top]}>
+    /*const innerView = <View key={`${name}_square`} style={[styles.shadowSquare, shadow.top]}>
       <View style={[styles.innerSquare, shadow.bottom]}>
         <Text style={styles.shadowLabel}>{name}</Text>
       </View>
@@ -86,7 +90,7 @@ export default class ShadowsScreen extends Component {
     return (
       <ShadowParentView key={`${name}_square`} shadowStyle={shadow.top}>
         {innerView}
-      </ShadowParentView>);
+      </ShadowParentView>);*/
 
     /*return (
       <View key={`${name}_square`} style={[styles.shadowSquare, shadow.top]}>
@@ -95,6 +99,29 @@ export default class ShadowsScreen extends Component {
         </View>
       </View>
     );*/
+
+    return (
+      <ShapeContainer key={`${name}_square`}
+        style={[styles.shadowSquare, shadow.top]} shadowStyle={shadow.top}>
+        <ShapeContainer style={[styles.innerSquare, shadow.bottom]} shadowStyle={shadow.bottom}>
+          <Text style={styles.shadowLabel}>{name}</Text>
+        </ShapeContainer>
+      </ShapeContainer>
+    );
+  }
+
+  renderButton(name, shadow) {
+    const button = <Button
+      style={shadow}
+      label={name} onPress={() => { }}
+      enableShadow />;
+
+    if (ANDROID_PLATFORM) {
+      return (<ShadowParentView style={shadow}>{button}</ShadowParentView>)
+    }
+    else {
+      return (button);
+    }
   }
 
   render() {
@@ -114,6 +141,12 @@ export default class ShadowsScreen extends Component {
             </View>
           </View>
           {this.renderCards()}
+          <View style={styles.buttonContainer}>
+            {this.renderButton('Normal Shadow', styles.shadowStyle1)}
+          </View>
+          <View style={styles.buttonContainer}>
+            {this.renderButton('Max Shadow', styles.shadowStyle2)}
+          </View>
         </ScrollView>
       </View>
     );
@@ -123,6 +156,14 @@ export default class ShadowsScreen extends Component {
 const SHAPE_DIAMETER = 80;
 
 const styles = StyleSheet.create({
+  buttonContainer: {
+
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 40,
+    marginBottom: 40
+  },
   container: {
     flexDirection: 'row',
     flex: 1,
@@ -169,5 +210,17 @@ const styles = StyleSheet.create({
   shadowLabel: {
     fontSize: 9,
     textAlign: 'center',
+  },
+  shadowStyle1: {
+    shadowColor: '#3082C8',
+    shadowOffset: { height: 5, width: 0 },
+    shadowOpacity: 0.35,
+    shadowRadius: 9.5,
+  },
+  shadowStyle2: {
+    shadowColor: '#3082C8',
+    shadowOffset: { height: 5, width: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 25,
   },
 });

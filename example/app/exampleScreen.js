@@ -3,12 +3,12 @@ import React, { Component } from 'react';
 import ReactNative, {
   StyleSheet,
   Text,
-  View,
+  
   ListView,
   FlatList,
   Platform
 } from 'react-native';
-import { Button } from 'react-native-ui-lib';
+import { View,Button } from 'react-native-ui-lib';
 import { AndroidShadowManager, ShadowParentView } from 'react-native-android-shadow';
 
 const ANDROID_PLATFORM = (Platform.OS === 'android');
@@ -30,7 +30,8 @@ export default class exampleScreen extends Component {
     return (
       <View style={styles.container}>
 
-        <ButtonContainer style={styles.buttonContainer}>
+        <ButtonContainer style={[styles.buttonContainer,styles.shadowStyleTxt]}
+        shadowStyle={StyleSheet.flatten(styles.shadowStyleTxt)}>
           <Text style={styles.welcome}>
             Welcome to React Native!
               </Text>
@@ -46,16 +47,14 @@ export default class exampleScreen extends Component {
         />*/}
 
 
-        <ButtonContainer style={styles.buttonContainer}
-          shadowStyle={StyleSheet.flatten(styles.shadowStyle1)}>
+        <ButtonContainer style={[styles.buttonContainer]}>
           <Button
             label="Normal Shadow" onPress={() => { }}
             ref={(r) => { this.applyShadowForButton(r); }}
             enableShadow />
         </ButtonContainer>
 
-        <ButtonContainer style={styles.buttonContainer}
-          shadowStyle={StyleSheet.flatten(styles.shadowStyle2)}>
+        <ButtonContainer style={[styles.buttonContainer,styles.shadowStyle2]}>
           <Button
             style={styles.shadowStyle2}
             label="Max Shadow " onPress={() => { }}
@@ -97,6 +96,7 @@ export default class exampleScreen extends Component {
     // }
   }
 }
+const SHAPE_DIAMETER = 80;
 
 const styles = StyleSheet.create({
   container: {
@@ -135,9 +135,32 @@ const styles = StyleSheet.create({
   },
   shadowStyle2: {
     // shadowColor: '#459FED',
-    shadowColor: '#3082C8',
+    shadowColor: '#008200',
+    shadowOffset: { height: 15, width: 15 },
+    shadowOpacity: 1,
+    shadowRadius: 9.5,
+  },
+shadowStyleTxt: {
+    // shadowColor: '#459FED',
+    shadowColor: '#000000',
     shadowOffset: { height: 5, width: 0 },
     shadowOpacity: 1,
     shadowRadius: 9.5,
+  },
+  innerCircle: {
+    width: SHAPE_DIAMETER,
+    height: SHAPE_DIAMETER,
+    borderRadius: SHAPE_DIAMETER / 2,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+  },
+  redCircle: {
+    width: SHAPE_DIAMETER,
+    height: SHAPE_DIAMETER,
+    borderRadius: SHAPE_DIAMETER / 2,
+    backgroundColor: 'blue',
+    margin: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

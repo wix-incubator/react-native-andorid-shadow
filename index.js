@@ -1,21 +1,25 @@
 
-import { NativeModules,requireNativeComponent } from 'react-native';
-// import PropTypes from 'prop-types';
+import { NativeModules,requireNativeComponent,View } from 'react-native';
+import PropTypes from 'prop-types';
 
 // const { RNReactNativeAndoridShadow } = NativeModules;
 
 // export default RNReactNativeAndoridShadow;
 
-// var iface = {
-//   name: 'ShadowParentView',
-//   propTypes: {
-//     shadowStyle: PropTypes.string,
+var iface = {
+  name: 'ShadowParentView',
+  propTypes: {
+    shadowStyle: PropTypes.object,
     
-//     ...View.propTypes // include the default view properties
-//   },
-// };
+    ...View.propTypes // include the default view properties
+  }
 
-const ShadowParentView = requireNativeComponent('ShadowParentView',null);
+};
+
+const ShadowParentView = requireNativeComponent('ShadowParentView',iface,{nativeOnly: {
+    nativeBackgroundAndroid: true,
+    nativeForegroundAndroid: true
+  }});
 const AndroidShadowManager = NativeModules.AndroidShadowManager;
 
 // export default NativeModules.AndroidShadowManager;
