@@ -5,7 +5,9 @@
   "nativePackage": true,
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": ":",
+    "build": ":",
+    "release": "wnpm-release --no-shrinkwrap"
   },
   "keywords": [
     "react-native"
@@ -13,10 +15,13 @@
   "author": "",
   "license": "",
   "peerDependencies": {
-    "react-native": ">=0.38.0",
-    "react": ">=15.4.1"
+    "react": ">=15.4.1",
+    "react-native": ">=0.38.0"
   },
   "dependencies": {
     "prop-types": "^15.6.0"
+  },
+  "optionalDependencies": {
+    "wnpm-ci": "^6.2.52"
   }
 }
