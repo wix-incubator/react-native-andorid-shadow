@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.wixpress.mobile</groupId>
+    <artifactId>react-native-android-shadow</artifactId>
+    <packaging>pom</packaging>
+    <name>react-native-android-shadow</name>
+    <description>React Native Android Shadow</description>
+    <version>1.0.0-SNAPSHOT</version>
+    <organization>
+        <name>One App</name>
+    </organization>
+    <parent>
+        <groupId>com.wixpress.common</groupId>
+        <artifactId>wix-master-parent</artifactId>
+        <version>100.0.0-SNAPSHOT</version>
+    </parent>
+
+    <developers>
+        <developer>
+            <name>Tzachi Kopylovitz</name>
+            <email>zachik@wix.com</email>
+            <roles>
+                <role>owner</role>
+            </roles>
+        </developer>
+    </developers>
+</project>
+Ï
