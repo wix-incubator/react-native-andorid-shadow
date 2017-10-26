@@ -9,9 +9,10 @@
     "build": ":",
     "release": "wnpm-release --no-shrinkwrap"
   },
-  "keywords": [
-    "react-native"
-  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
+  "keywords": ["react-native"],
   "author": "",
   "license": "",
   "peerDependencies": {
