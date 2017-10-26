@@ -10,7 +10,7 @@ var iface = {
   name: 'ShadowParentView',
   propTypes: {
     shadowStyle: PropTypes.object,
-    
+    useUIThread: PropTypes.bool,
     ...View.propTypes // include the default view properties
   }
 

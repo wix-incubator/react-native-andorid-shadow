@@ -35,5 +35,6 @@ repositories {
 
 dependencies {
     compile 'com.facebook.react:react-native:+'
+    compile 'com.android.support:support-annotations:+'
 }
   

@@ -52,5 +52,8 @@ public class ShadowParentViewManager extends ReactViewManager {
     public void setShadowOffset(ShadowParentView view, @Nullable ReadableMap shadowOffset) {
         view.setShadowOffset(shadowOffset);
     }
-
+    @ReactProp(name = "useUIThread")
+    public void setUseUIThread(ShadowParentView view, boolean useUi) {
+        view.setBlurInBG(!useUi);
+    }
 }

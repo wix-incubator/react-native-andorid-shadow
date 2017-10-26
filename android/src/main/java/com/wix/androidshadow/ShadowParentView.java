@@ -12,6 +12,7 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.Region;
 import android.os.AsyncTask;
+import android.support.annotation.AnyThread;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,7 +28,7 @@ import com.facebook.react.views.view.ReactViewGroup;
 public class ShadowParentView extends ReactViewGroup {
     private static final String TAG = "ReactNativeJS";
 
-    private static final float BLUR_SCALE = 0.25f;
+    private static final float BLUR_SCALE = 0.125f;
 
     private Context mContext;
     private Bitmap viewBmp;
@@ -37,6 +38,12 @@ public class ShadowParentView extends ReactViewGroup {
 //    private float shadowOpacity = 1f;
 //    private int shadowColor;
     private boolean hasShadowColor = false;
+
+    public void setBlurInBG(boolean blurInBG) {
+        this.blurInBG = blurInBG;
+    }
+
+    private boolean blurInBG = true;
     private float shadowOffsetX = 0f;
     private float shadowOffsetY = 0f;
     private Paint shadowPaint;
@@ -89,24 +96,6 @@ public class ShadowParentView extends ReactViewGroup {
     }
 
     @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
-//        Log.d(TAG,"ShadowParentView onMeasure! before child w = " + getChildAt(0).getMeasuredWidth());
-
-//        measureChildren(widthMeasureSpec,heightMeasureSpec);
-//        Log.d(TAG,"ShadowParentView onMeasure! after child w = " + getChildAt(0).getMeasuredWidth());
-//        super.onMeasure(MeasureSpec.makeMeasureSpec(getChildAt(0).getMeasuredWidth(),MeasureSpec.EXACTLY), heightMeasureSpec);
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-
-//        Log.d(TAG,"ShadowParentView onMeasure! w = " + getMeasuredWidth() + " widthMode " + widthMode + " widthSize " + widthSize);
-//        Log.d(TAG,"ShadowParentView onMeasure! child w = " + getChildAt(0).getMeasuredWidth());
-//        Log.d(TAG,"ShadowParentView onMeasure! param w = " + getLayoutParams().width );
-    }
-
-    @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
         Log.d(TAG, "ShadowParentView onLayout! w = " + getWidth() + " changed = " + changed);
@@ -120,11 +109,9 @@ public class ShadowParentView extends ReactViewGroup {
             firstLayout = false;
 
             if (blurBitmap == null) {
-                new BlurTask().execute();
-//                blurBitmap = BlurHelper.blur(getContext(),createPaddedBitmap(),BLUR_SCALE,shadowRadius);
+                createBlur();
             }
         }
-//        blurBitmap = captureView();
     }
 
     @Override
@@ -140,13 +127,6 @@ public class ShadowParentView extends ReactViewGroup {
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
-
-        super.onDraw(canvas);
-        Log.d(TAG,"ShadowParentView onDraw! " );
-    }
-
-    @Override
     protected void dispatchDraw(Canvas canvas) {
         Log.d(TAG,"ShadowParentView dispatchDraw! " );
 
@@ -156,28 +136,13 @@ public class ShadowParentView extends ReactViewGroup {
         super.dispatchDraw(canvas);
     }
 
-    private void connectChildAlpha() {
-        final View child = getChildAt(0);
-        child.getViewTreeObserver().addOnDrawListener(new ViewTreeObserver.OnDrawListener() {
-            @Override
-            public void onDraw() {
-                Log.d(TAG,"ShadowParentView child onDraw! alpha = " + child.getAlpha());
-//                setAlpha(child.getAlpha());
-            }
-        });
-    }
-
     private void drawShadow(Canvas canvas) {
         if (blurBitmap != null) {
 
             Rect newRect = canvas.getClipBounds();
             Log.d(TAG,"ShadowParentView has blur! " + newRect);
-//            newRect.inset(-shadowPadding, -shadowPadding - ((int)shadowOffsetY));
             newRect.inset(-shadowPadding, -shadowPadding);
             canvas.clipRect (newRect, Region.Op.REPLACE);
-
-//            canvas.drawBitmap(blurBitmap,shadowOffsetX -shadowPadding,
-//                    -shadowPadding + shadowOffsetY, null);
 
             canvas.drawBitmap(blurBitmap, -shadowPadding,
                     -shadowPadding, shadowPaint);
@@ -216,22 +181,41 @@ public class ShadowParentView extends ReactViewGroup {
         return dp * getResources().getDisplayMetrics().density;
     }
 
+    private void createBlur() {
+        viewBmp = createPaddedBitmap();
+        Log.d(TAG,"ShadowParentView starting blur! w = " + viewBmp.getWidth() );
+        if (blurInBG) {
+            new BlurTask().execute();
+        }
+        else {
+            blurBitmap = createBlurredBitmap();
+        }
+    }
+
+    @AnyThread
+    private Bitmap createBlurredBitmap() {
+        Bitmap blurredBmp = BlurHelper.blur(mContext,viewBmp,BLUR_SCALE,shadowRadius);
+        Paint pnt = new Paint();
+        pnt.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
+        Canvas canvas = new Canvas(blurredBmp);
+        canvas.drawBitmap(viewBmp,-shadowOffsetX,-shadowOffsetY,pnt);
+        return blurredBmp;
+    }
+
     private class BlurTask extends AsyncTask<Void,Void,Bitmap> {
 
-        @Override
-        protected void onPreExecute() {
-            viewBmp = createPaddedBitmap();
-            Log.d(TAG,"ShadowParentView starting blur! w = " + viewBmp.getWidth() );
-        }
+//        @Override
+//        protected void onPreExecute() {
+//            viewBmp = createPaddedBitmap();
+//            Log.d(TAG,"ShadowParentView starting blur! w = " + viewBmp.getWidth() );
+//        }
 
         @Override
         protected Bitmap doInBackground(Void... voids) {
-            Bitmap blurredBmp = BlurHelper.blur(mContext,viewBmp,BLUR_SCALE,shadowRadius);
-            Paint pnt = new Paint();
-            pnt.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
-            Canvas canvas = new Canvas(blurredBmp);
-            canvas.drawBitmap(viewBmp,-shadowOffsetX,-shadowOffsetY,pnt);
-            return blurredBmp;
+//            Bitmap blurredBmp = BlurHelper.blur(mContext,viewBmp,BLUR_SCALE,shadowRadius);
+//            clearFromShadow(blurredBmp);
+
+            return createBlurredBitmap();
         }
 
         @Override
