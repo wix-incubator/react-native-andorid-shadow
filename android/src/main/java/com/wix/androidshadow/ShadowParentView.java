@@ -28,7 +28,7 @@ import com.facebook.react.views.view.ReactViewGroup;
 public class ShadowParentView extends ReactViewGroup {
     private static final String TAG = "ReactNativeJS";
 
-    private static final float BLUR_SCALE = 0.125f;
+    private static final float BLUR_SCALE = 0.5f;
 
     private Context mContext;
     private Bitmap viewBmp;
@@ -80,7 +80,7 @@ public class ShadowParentView extends ReactViewGroup {
     }
 
     public void setShadowRadius(float radius) {
-        this.shadowRadius = radius;
+        this.shadowRadius = dpToPx(radius);
     }
     public void setShadowOpacity(float opacity) {
         this.shadowPaint.setAlpha((int) (opacity * 255));
