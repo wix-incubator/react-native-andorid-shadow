@@ -16,7 +16,7 @@ var iface = {
 
 };
 
-const ShadowParentView = requireNativeComponent('ShadowParentView',iface,{nativeOnly: {
+const ShadowParentView = requireNativeComponent('ShadowParentView',null,{nativeOnly: {
     nativeBackgroundAndroid: true,
     nativeForegroundAndroid: true
   }});
