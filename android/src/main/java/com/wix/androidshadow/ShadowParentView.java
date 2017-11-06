@@ -6,12 +6,14 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.NinePatch;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.Region;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
 import android.os.AsyncTask;
 import android.support.annotation.AnyThread;
@@ -22,7 +24,12 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.views.imagehelper.ResourceDrawableIdHelper;
 import com.facebook.react.views.view.ReactViewGroup;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 
 /**
  * Created by zachik on 10/10/2017.
@@ -31,15 +38,10 @@ import com.facebook.react.views.view.ReactViewGroup;
 public class ShadowParentView extends ReactViewGroup {
     private static final String TAG = "ReactNativeJS";
 
-    private static final float BLUR_SCALE = 0.5f;
-
-    private Context mContext;
-    private Bitmap viewBmp;
-    private Bitmap blurBitmap;
     private int shadowPadding = 18;
     private float shadowRadius = 25f;
-//    private float shadowOpacity = 1f;
-//    private int shadowColor;
+    //    private float shadowOpacity = 1f;
+    private int shadowColor;
     private boolean hasShadowColor = false;
 
     public void setBlurInBG(boolean blurInBG) {
@@ -49,15 +51,14 @@ public class ShadowParentView extends ReactViewGroup {
     private boolean blurInBG = true;
     private float shadowOffsetX = 0f;
     private float shadowOffsetY = 0f;
-    private Paint shadowPaint;
+    //    private Paint shadowPaint;
     private boolean firstLayout = true;
 
     private NinePatchDrawable shadowDrawable;
 
     public ShadowParentView(Context context) {
         super(context);
-        mContext = context;
-        shadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+//        shadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     }
 
     public void setShadowParams(ReadableMap readableMap) {
@@ -85,19 +86,24 @@ public class ShadowParentView extends ReactViewGroup {
     }
 
     public void setShadowRadius(float radius) {
-        this.shadowRadius = dpToPx(radius);
+//        this.shadowRadius = dpToPx(radius);
     }
     public void setShadowOpacity(float opacity) {
-        this.shadowPaint.setAlpha((int) (opacity * 255));
+//        this.shadowPaint.setAlpha((int) (opacity * 255));
     }
-    public void setShadowColor(int shadowColor) {
-//        int shadowColor = Color.parseColor(colorStr);
-        shadowPaint.setColorFilter(new PorterDuffColorFilter(shadowColor, PorterDuff.Mode.SRC_IN));
+    public void setShadowColor(int color) {
+        shadowColor = color;
+        hasShadowColor = true;
+//        shadowPaint.setColorFilter(new PorterDuffColorFilter(shadowColor, PorterDuff.Mode.SRC_IN));
     }
 
     public void setShadowOffset(ReadableMap offsetMap) {
-        shadowOffsetX = dpToPx(  (float) offsetMap.getDouble("width"));
-        shadowOffsetY = dpToPx( (float) offsetMap.getDouble("height"));
+//        shadowOffsetX = dpToPx(  (float) offsetMap.getDouble("width"));
+//        shadowOffsetY = dpToPx( (float) offsetMap.getDouble("height"));
+    }
+
+    public void setShadowImageUri(String uriStr) {
+        shadowDrawable = (NinePatchDrawable) ResourceDrawableIdHelper.getInstance().getResourceDrawable(getContext(),uriStr);
     }
 
     @Override
@@ -110,27 +116,17 @@ public class ShadowParentView extends ReactViewGroup {
             e.printStackTrace();
         }
 
-        if (firstLayout && getWidth() > 0){
+        if (firstLayout && getWidth() > 0 && shadowDrawable != null){
             firstLayout = false;
+            decodeShadowBounds();
 
-//            if (blurBitmap == null) {
-////                createBlur();
-//                decodeShadowRes();
-//            }
-            if (shadowDrawable == null) {
-//                createBlur();
-                decodeShadowRes();
-            }
         }
     }
 
-    private void decodeShadowRes() {
-//        BitmapFactory.Options options = new BitmapFactory.Options();
-//        options.inScaled = true;
-//        blurBitmap = BitmapFactory.decodeResource(getResources(),R.drawable.shadow_rounded_rec,options);
-
-//        shadowDrawable = (NinePatchDrawable) getResources().getDrawable(R.drawable.shadow_rounded_rec);
-        shadowDrawable = (NinePatchDrawable) ResourcesCompat.getDrawable(getResources(),R.drawable.shadow_green100_filled,null);
+    private void decodeShadowBounds() {
+        if (hasShadowColor) {
+            shadowDrawable.setColorFilter(new PorterDuffColorFilter(shadowColor, PorterDuff.Mode.SRC_IN));
+        }
         Rect pad = new Rect();
         shadowDrawable.getPadding(pad);
 
@@ -138,25 +134,9 @@ public class ShadowParentView extends ReactViewGroup {
         Rect bounds = new Rect(view.getLeft()-pad.left, view.getTop()-pad.top,
                 view.getRight()+pad.right, view.getBottom()+pad.bottom);
 
-        shadowPadding = pad.bottom;
-        Log.d(TAG,"ShadowParentView decodeShadowRes view rect " + bounds);
-        Log.d(TAG,"ShadowParentView decodeShadowRes view pad " + pad);
-//        bounds.inset(-shadowPadding, -shadowPadding);
+        shadowPadding = Math.max(Math.max(pad.left,pad.top),Math.max(pad.right,pad.bottom));
+
         shadowDrawable.setBounds(bounds);
-        Log.d(TAG,"ShadowParentView decodeShadowRes h " + shadowDrawable.getIntrinsicHeight());
-        Log.d(TAG,"ShadowParentView decodeShadowRes d " + getResources().getDisplayMetrics().density);
-    }
-
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        Log.d(TAG,"ShadowParentView onAttachedToWindow! w = " + getWidth());
-    }
-
-    @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
-        Log.d(TAG,"ShadowParentView onFinishInflate! w = " + getWidth());
     }
 
     @Override
@@ -164,7 +144,6 @@ public class ShadowParentView extends ReactViewGroup {
         Log.d(TAG,"ShadowParentView dispatchDraw! " );
 
         drawShadow(canvas);
-
 
         super.dispatchDraw(canvas);
     }
@@ -177,93 +156,9 @@ public class ShadowParentView extends ReactViewGroup {
             newRect.inset(-shadowPadding, -shadowPadding);
             canvas.clipRect (newRect, Region.Op.REPLACE);
 
-//            canvas.drawBitmap(blurBitmap, -shadowPadding,
-//                    -shadowPadding, shadowPaint);
-
             shadowDrawable.draw(canvas);
         }
     }
-
-    private Bitmap captureView() {
-        View view = getChildAt(0);
-        view.setDrawingCacheEnabled(true);
-        view.destroyDrawingCache();
-        view.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_LOW);
-        Bitmap bitmap = view.getDrawingCache();
-        Log.d(TAG,"ShadowParentView captureView w = " + bitmap.getWidth());
-        return bitmap;
-    }
-
-    private Bitmap createPaddedBitmap() {
-        int width = getWidth() + 2 * shadowPadding;
-        int height = getHeight() + 2 * shadowPadding;
-
-        Bitmap output = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(output);
-
-        Matrix matrix = new Matrix();
-        matrix.postTranslate(shadowPadding + shadowOffsetX,shadowPadding + shadowOffsetY);
-        canvas.setMatrix(matrix);
-        draw(canvas);
-//        getChildAt(0).draw(canvas);
-
-//        canvas.drawColor(Color.RED);
-//        canvas.drawBitmap(captureView(),shadowPadding,shadowPadding,null);
-        return output;
-    }
-
-    private float dpToPx(float dp) {
-        return dp * getResources().getDisplayMetrics().density;
-    }
-
-    private void createBlur() {
-        viewBmp = createPaddedBitmap();
-        Log.d(TAG,"ShadowParentView starting blur! w = " + viewBmp.getWidth() );
-        if (blurInBG) {
-            new BlurTask().execute();
-        }
-        else {
-            blurBitmap = createBlurredBitmap();
-        }
-    }
-
-    @AnyThread
-    private Bitmap createBlurredBitmap() {
-        Bitmap blurredBmp = BlurHelper.blur(mContext,viewBmp,BLUR_SCALE,shadowRadius);
-        Paint pnt = new Paint();
-        pnt.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
-        Canvas canvas = new Canvas(blurredBmp);
-        canvas.drawBitmap(viewBmp,-shadowOffsetX,-shadowOffsetY,pnt);
-        return blurredBmp;
-    }
-
-    private class BlurTask extends AsyncTask<Void,Void,Bitmap> {
-
-//        @Override
-//        protected void onPreExecute() {
-//            viewBmp = createPaddedBitmap();
-//            Log.d(TAG,"ShadowParentView starting blur! w = " + viewBmp.getWidth() );
-//        }
-
-        @Override
-        protected Bitmap doInBackground(Void... voids) {
-//            Bitmap blurredBmp = BlurHelper.blur(mContext,viewBmp,BLUR_SCALE,shadowRadius);
-//            clearFromShadow(blurredBmp);
-
-            return createBlurredBitmap();
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            if (bitmap != null) {
-                Log.d(TAG,"ShadowParentView finished blur! w = " + bitmap.getWidth() );
-
-                blurBitmap = bitmap;
-                invalidate();
-            }
-        }
-    }
-
 
 
 }

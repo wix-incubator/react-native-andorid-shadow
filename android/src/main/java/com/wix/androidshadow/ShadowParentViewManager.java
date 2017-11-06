@@ -1,5 +1,7 @@
 package com.wix.androidshadow;
 
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -7,7 +9,11 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
+import com.facebook.react.views.imagehelper.ResourceDrawableIdHelper;
 import com.facebook.react.views.view.ReactViewManager;
+
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 
 /**
  * Created by zachik on 10/10/2017.
@@ -29,6 +35,14 @@ public class ShadowParentViewManager extends ReactViewManager {
     @ReactProp(name = "shadowStyle")
     public void setShadowStyle(ShadowParentView view, @Nullable ReadableMap shadowStyle) {
         view.setShadowParams(shadowStyle);
+    }
+
+    @ReactProp(name = "shadowSrc")
+    public void setShadowSrc(ShadowParentView view,final String uriStr) {
+
+        Log.d("ReactNativeJS","ShadowParentView setShadowSrc! shadowSrc uri = " +  uriStr);
+        view.setShadowImageUri(uriStr);
+
     }
 
     @ReactProp(name = "shadowRadius", defaultFloat = 0f)
