@@ -3,16 +3,15 @@ import React, { Component } from 'react';
 import ReactNative, {
   StyleSheet,
   Text,
-  
+
   ListView,
   FlatList,
   Platform
 } from 'react-native';
-import { View,Button } from 'react-native-ui-lib';
-import { AndroidShadowManager, ShadowParentView } from 'react-native-android-shadow';
+import { View, Button, Card } from 'react-native-ui-lib';
+import { AndroidShadowManager } from 'react-native-android-shadow';
 
 const ANDROID_PLATFORM = (Platform.OS === 'android');
-const ButtonContainer = ANDROID_PLATFORM ? ShadowParentView : View;
 
 export default class exampleScreen extends Component {
 
@@ -22,7 +21,7 @@ export default class exampleScreen extends Component {
     // var fruits = ["Banana", "Orange", "Apple", "Mango"];
     var fruits = [];
     for (i = 0; i < 11; i++) {
-      fruits.push({key:i, txt: 'Lemon '+i });
+      fruits.push({ key: i, txt: 'Lemon ' + i });
     }
     const ds = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
     const data = ds.cloneWithRows(fruits);
@@ -30,12 +29,10 @@ export default class exampleScreen extends Component {
     return (
       <View style={styles.container}>
 
-        <ButtonContainer style={[styles.buttonContainer,styles.shadowStyleTxt]}
-        shadowStyle={StyleSheet.flatten(styles.shadowStyleTxt)}>
-          <Text style={styles.welcome}>
-            Welcome to React Native!
+
+        <Text style={styles.welcome}>
+          Welcome to React Native!
               </Text>
-        </ButtonContainer>
 
         {/*<ListView dataSource={data} enableEmptySections
           renderRow={this._renderRow.bind(this)}>
@@ -47,22 +44,21 @@ export default class exampleScreen extends Component {
         />*/}
 
 
-        <ButtonContainer style={[styles.buttonContainer]}>
+        <View style={[styles.buttonContainer]}>
           <Button
             label="Normal Shadow" onPress={() => { }}
             ref={(r) => { this.applyShadowForButton(r); }}
             enableShadow />
-        </ButtonContainer>
+        </View>
 
-        <ButtonContainer style={[styles.buttonContainer,styles.shadowStyle2]}>
-          <Button
-            style={styles.shadowStyle2}
-            label="Max Shadow " onPress={() => { }}
-            ref={(r) => { this.applyShadowForButton(r); }}
-            enableShadow />
-        </ButtonContainer>
+        <Button style={{ marginTop: 45,marginBottom:30 }} label="No Shadow" onPress={() => { }} />
 
-        <Button style={{ marginTop: 45 }} label="No Shadow" onPress={() => { }} />
+        <Card height={200} style={{  padding: 10 }}
+          ref={element => (this.applyShadowForCard(element))}>
+          <Text>
+            Card with shadow
+            </Text>
+        </Card>
 
       </View>
     );
@@ -71,29 +67,43 @@ export default class exampleScreen extends Component {
   _renderRow(fruit) {
     return (
       <View style={styles.listItemContainer}>
-        <ButtonContainer style={styles.buttonContainer}
-          shadowStyle={StyleSheet.flatten(styles.shadowStyle1)}>
-          <Button
-            label={fruit.txt} onPress={() => { }}
-            enableShadow />
-        </ButtonContainer>
+
+        <Button
+          label={fruit.txt} onPress={() => { }}
+          enableShadow />
       </View>
     );
   }
 
-  // render() {
-
-  //   if (ANDROID_PLATFORM) {
-  //     return this.renderAndroid();
-  //   }
-  //   return this.renderIos();
-
-  // }
+  applyShadowForCard(card) {
+    if (ANDROID_PLATFORM) {
+      const cardTag = ReactNative.findNodeHandle(card);
+      if (cardTag) {
+        AndroidShadowManager.applyShadowForView(cardTag, {
+          insetX: 4,
+          insetY: 4,
+          offsetX: 0,
+          offsetY: -10,
+          cornerRadius: 12,
+          elevation: 9
+        });
+      }
+    }
+  }
   applyShadowForButton(button) {
-    // if (ANDROID_PLATFORM) {
-    //   const buttonTag = ReactNative.findNodeHandle(button);
-    //   AndroidShadowManager.applyShadowForView(buttonTag,{});
-    // }
+    if (ANDROID_PLATFORM) {
+      const buttonTag = ReactNative.findNodeHandle(button);
+      if (buttonTag) {
+        AndroidShadowManager.applyShadowForView(buttonTag, {
+          insetX: 4,
+          insetY: 4,
+          offsetX: 0,
+          offsetY: 0,
+          cornerRadius: 27,
+          elevation: 9
+        });
+      }
+    }
   }
 }
 const SHAPE_DIAMETER = 80;
@@ -140,7 +150,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 9.5,
   },
-shadowStyleTxt: {
+  shadowStyleTxt: {
     // shadowColor: '#459FED',
     shadowColor: '#000000',
     shadowOffset: { height: 5, width: 0 },

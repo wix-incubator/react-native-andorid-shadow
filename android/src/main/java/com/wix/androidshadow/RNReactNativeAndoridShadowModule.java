@@ -1,13 +1,18 @@
 
 package com.wix.androidshadow;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Outline;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewOutlineProvider;
 import android.view.ViewTreeObserver;
 
 import com.facebook.react.ReactRootView;
@@ -26,7 +31,7 @@ public class RNReactNativeAndoridShadowModule extends ReactContextBaseJavaModule
     private static final float BLUR_RADIUS = 17.5f;
     private static final String TAG = "ReactNativeJS";
     private final ReactApplicationContext reactContext;
-    private ReactViewGroup targetView;
+//    private ReactViewGroup targetView;
     private ReactViewGroup parentView;
 
     public RNReactNativeAndoridShadowModule(ReactApplicationContext reactContext) {
@@ -42,66 +47,21 @@ public class RNReactNativeAndoridShadowModule extends ReactContextBaseJavaModule
     @ReactMethod
     public void applyShadowForView(final Integer tag, final ReadableMap param) {
         Log.d(TAG,"AndroidShadowManager applyShadowForView! tag: " + tag);
-
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            return;
+        }
         UIManagerModule uiManager = reactContext.getNativeModule(UIManagerModule.class);
         uiManager.addUIBlock(new UIBlock() {
 
             @Override
             public void execute(NativeViewHierarchyManager nvhm) {
-                targetView = (ReactViewGroup) nvhm.resolveView(tag);
-//                ((View) targetView.getParent()).setBackgroundColor(Color.RED);
-                parentView = (ReactViewGroup) targetView.getParent();
+                ReactViewGroup targetView = (ReactViewGroup) nvhm.resolveView(tag);
+                Log.d(TAG,"AndroidShadowManager view w = " + targetView.getWidth() + " h = " + targetView.getHeight());
+//                targetView.setBackgroundColor(Color.CYAN);
+                targetView.getViewTreeObserver().addOnGlobalLayoutListener(new OutlineAdjuster(targetView,param));
 
-                findReactRoot(targetView);
-                parentView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-                    @Override
-                    public void onLayoutChange(View v, int left, int top, int right, int bottom,
-                                               int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                        Log.d(TAG,"onLayoutChange bottom = " + bottom + " top = " + top);
-                        captureView();
-                    }
-                });
-//                targetView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-//                    @Override
-//                    public void onGlobalLayout() {
-//                        Log.d(TAG,"AndroidShadowManager onGlobalLayout: w = " + targetView.getWidth());
-//                        Log.d(TAG,"AndroidShadowManager onGlobalLayout: parent w = " + parentView.getWidth());
-//                    }
-//                });
             }
         });
-    }
-
-    private Bitmap captureView() {
-        parentView.setDrawingCacheEnabled(true);
-        parentView.destroyDrawingCache();
-        parentView.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_LOW);
-        Bitmap bitmap = parentView.getDrawingCache();
-        Log.d(TAG,"AndroidShadowManager captureView w = " + bitmap.getWidth());
-        Bitmap blurredBmp = blur(targetView.getContext(),bitmap);
-        parentView.setTranslucentBackgroundDrawable(new BitmapDrawable(targetView.getResources(),blurredBmp));
-        return bitmap;
-    }
-
-
-
-    public static Bitmap blur(Context ctx, Bitmap image) {
-        int width = Math.round(image.getWidth() * BITMAP_SCALE);
-        int height = Math.round(image.getHeight() * BITMAP_SCALE);
-
-        Bitmap inputBitmap = Bitmap.createScaledBitmap(image, width, height, false);
-        Bitmap outputBitmap = Bitmap.createBitmap(inputBitmap);
-
-//        RenderScript rs = RenderScript.create(ctx);
-//        ScriptIntrinsicBlur theIntrinsic = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs));
-//        Allocation tmpIn = Allocation.createFromBitmap(rs, inputBitmap);
-//        Allocation tmpOut = Allocation.createFromBitmap(rs, outputBitmap);
-//        theIntrinsic.setRadius(BLUR_RADIUS);
-//        theIntrinsic.setInput(tmpIn);
-//        theIntrinsic.forEach(tmpOut);
-//        tmpOut.copyTo(outputBitmap);
-
-        return outputBitmap;
     }
 
     private ReactRootView findReactRoot(View v) {
@@ -119,5 +79,48 @@ public class RNReactNativeAndoridShadowModule extends ReactContextBaseJavaModule
         return null;
     }
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private class OutlineAdjuster implements ViewTreeObserver.OnGlobalLayoutListener {
+        private ReactViewGroup mTargetView;
+        private ReadableMap mParam;
+
+        public OutlineAdjuster(ReactViewGroup mTargetView, ReadableMap mParam) {
+            this.mTargetView = mTargetView;
+
+            this.mParam = mParam;
+        }
+
+        @Override
+        public void onGlobalLayout() {
+            final float dens = mTargetView.getResources().getDisplayMetrics().density;
+            Log.d(TAG,"AndroidShadowManager onGlobalLayout w = " + mTargetView.getWidth() + " h = " + mTargetView.getHeight());
+            Log.d(TAG,"AndroidShadowManager onGlobalLayout pad top = " + mTargetView.getPaddingTop() + " right = " + mTargetView.getPaddingRight());
+            mTargetView.setOutlineProvider(new ViewOutlineProvider() {
+
+                @Override
+                public void getOutline(View view, Outline outline) {
+                    Log.d(TAG,"AndroidShadowManager getOutline w = " + view.getWidth());
+
+                    int insetX = (int) (mParam.getDouble("insetX") * dens);
+                    int insetY = (int) (mParam.getDouble("insetY") * dens);
+                    int offsetX = (int) (mParam.getDouble("offsetX") * dens);
+                    int offsetY = (int) (mParam.getDouble("offsetY") * dens);
+                    float cornerRad = (float) (mParam.getDouble("cornerRadius") * dens);
+                    float elevation = (float) (mParam.getDouble("elevation") * dens);
+
+                    mTargetView.setElevation(elevation);
+
+                    Rect bounds = new Rect(0,0,view.getWidth(),view.getHeight());
+                    bounds.inset(insetX,insetY);
+                    outline.setRoundRect(bounds,cornerRad);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                        outline.offset(offsetX,offsetY);
+                    }
+                }
+            });
+
+
+        }
+    }
 
 }
